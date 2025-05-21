@@ -1,9 +1,7 @@
 # Copyright (c) Opendatalab. All rights reserved.
 import copy
-import os.path
 import warnings
 import numpy as np
-import yaml
 import torch
 from loguru import logger
 from pathlib import Path

@@ -27,6 +27,31 @@ TorchocrInfer/
 
 ## 使用方法
 
+### 安装依赖
+
+1. 安装uv包管理器
+
+建议使用uv来管理依赖环境，若未安装uv，可通过pip进行安装：
+```bash
+pip install uv
+```
+
+2. 创建虚拟环境
+```bash
+uv venv --python 3.10
+```
+
+3. 激活虚拟环境
+```bash
+.\.venv\Scripts\activate
+```
+
+4. 根据`uv.lock`安装依赖
+```bash
+uv sync
+```
+
+
 ### 命令行参数
 
 - `--data_path`：**必需参数**，指定输入图片路径或目录路径
@@ -54,10 +79,6 @@ python infer.py --data_path test_img --save_path output
 </div>
 
 
-
-
-
-
 ## 参考
 
 - [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
@@ -65,4 +86,3 @@ python infer.py --data_path test_img --save_path output
 - [PaddleOCR2Pytorch](https://github.com/frotms/PaddleOCR2Pytorch)
 
 - [MinerU](https://github.com/opendatalab/MinerU)
-
