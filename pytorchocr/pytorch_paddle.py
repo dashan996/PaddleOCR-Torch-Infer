@@ -108,11 +108,6 @@ def get_device():
         return "cpu"
 
 
-def get_local_models_dir():
-    models_dir = "C:/Users/zxy/.cache/huggingface/hub/models--opendatalab--PDF-Extract-Kit-1.0/snapshots/782e787d46ed9b52253af6c1f69cdfcc76583e8d/models"
-    return models_dir
-
-
 def get_model_params(lang, config):
     if lang in config["lang"]:
         params = config["lang"][lang]
@@ -152,16 +147,9 @@ class PytorchPaddleOCR(TextSystem):
         else:
             pass
 
-        models_config_path = os.path.join(root_dir, "config", "models_config.yml")
-        with open(models_config_path) as file:
-            config = yaml.safe_load(file)
-            det, rec, dict_file = get_model_params(self.lang, config)
-
         kwargs["det_model_path"] = "models/ch_PP-OCRv4_det_infer.pth"
-        kwargs["rec_model_path"] = "models/ch_PP-OCRv5_rec_server_infer.pth"
-        kwargs["rec_char_dict_path"] = os.path.join(
-            root_dir, "pytorchocr", "utils", "resources", "dict", dict_file
-        )
+        kwargs["rec_model_path"] = "models/ch_PP-OCRv4_rec_infer.pth"
+        kwargs["rec_char_dict_path"] = "models/ppocr_keys_v1.txt"
         # kwargs['rec_batch_num'] = 8
 
         kwargs["device"] = device
