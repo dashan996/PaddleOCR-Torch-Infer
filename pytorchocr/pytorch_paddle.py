@@ -4,10 +4,10 @@ import os.path
 import warnings
 import numpy as np
 import yaml
+import torch
 from loguru import logger
 from pathlib import Path
 
-from magic_pdf.libs.config_reader import get_device, get_local_models_dir
 from utils.ocr_utils import (
     check_img,
     preprocess_image,
@@ -101,6 +101,18 @@ devanagari_lang = [
 ]
 
 
+def get_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    else:
+        return "cpu"
+
+
+def get_local_models_dir():
+    models_dir = "C:/Users/zxy/.cache/huggingface/hub/models--opendatalab--PDF-Extract-Kit-1.0/snapshots/782e787d46ed9b52253af6c1f69cdfcc76583e8d/models"
+    return models_dir
+
+
 def get_model_params(lang, config):
     if lang in config["lang"]:
         params = config["lang"][lang]
@@ -144,9 +156,9 @@ class PytorchPaddleOCR(TextSystem):
         with open(models_config_path) as file:
             config = yaml.safe_load(file)
             det, rec, dict_file = get_model_params(self.lang, config)
-        ocr_models_dir = os.path.join(get_local_models_dir(), "OCR", "paddleocr_torch")
-        kwargs["det_model_path"] = os.path.join(ocr_models_dir, det)
-        kwargs["rec_model_path"] = os.path.join(ocr_models_dir, rec)
+
+        kwargs["det_model_path"] = "models/ch_PP-OCRv4_det_infer.pth"
+        kwargs["rec_model_path"] = "models/ch_PP-OCRv5_rec_server_infer.pth"
         kwargs["rec_char_dict_path"] = os.path.join(
             root_dir, "pytorchocr", "utils", "resources", "dict", dict_file
         )
@@ -169,7 +181,7 @@ class PytorchPaddleOCR(TextSystem):
         tqdm_enable=False,
     ):
         assert isinstance(img, (np.ndarray, list, str, bytes))
-        if isinstance(img, list) and det == True:
+        if isinstance(img, list) and det is True:
             logger.error("When input a list of images, det must be false")
             exit(0)
         img = check_img(img)

@@ -2,8 +2,63 @@
 import copy
 import cv2
 import numpy as np
-from magic_pdf.pre_proc.ocr_dict_merge import merge_spans_to_line
-from magic_pdf.libs.boxbase import __is_overlaps_y_exceeds_threshold
+from utils.ocr_content_type import ContentType
+
+
+def __is_overlaps_y_exceeds_threshold(bbox1, bbox2, overlap_ratio_threshold=0.8):
+    """检查两个bbox在y轴上是否有重叠，并且该重叠区域的高度占两个bbox高度更低的那个超过80%"""
+    _, y0_1, _, y1_1 = bbox1
+    _, y0_2, _, y1_2 = bbox2
+
+    overlap = max(0, min(y1_1, y1_2) - max(y0_1, y0_2))
+    height1, height2 = y1_1 - y0_1, y1_2 - y0_2
+    # max_height = max(height1, height2)
+    min_height = min(height1, height2)
+
+    return (overlap / min_height) > overlap_ratio_threshold
+
+
+def merge_spans_to_line(spans, threshold=0.6):
+    if len(spans) == 0:
+        return []
+    else:
+        # 按照y0坐标排序
+        spans.sort(key=lambda span: span["bbox"][1])
+
+        lines = []
+        current_line = [spans[0]]
+        for span in spans[1:]:
+            # 如果当前的span类型为"interline_equation" 或者 当前行中已经有"interline_equation"
+            # image和table类型，同上
+            if span["type"] in [
+                ContentType.InterlineEquation,
+                ContentType.Image,
+                ContentType.Table,
+            ] or any(
+                s["type"]
+                in [ContentType.InterlineEquation, ContentType.Image, ContentType.Table]
+                for s in current_line
+            ):
+                # 则开始新行
+                lines.append(current_line)
+                current_line = [span]
+                continue
+
+            # 如果当前的span与当前行的最后一个span在y轴上重叠，则添加到当前行
+            if __is_overlaps_y_exceeds_threshold(
+                span["bbox"], current_line[-1]["bbox"], threshold
+            ):
+                current_line.append(span)
+            else:
+                # 否则，开始新行
+                lines.append(current_line)
+                current_line = [span]
+
+        # 添加最后一行
+        if current_line:
+            lines.append(current_line)
+
+        return lines
 
 
 def img_decode(content: bytes):
