@@ -44,9 +44,6 @@ python infer.py --data_path test_img --save_path output
 ## 输出说明
 
 
-
-
-
 ## 参考
 
 - [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
