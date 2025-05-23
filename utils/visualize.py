@@ -29,35 +29,10 @@ def draw_ocr_results(image, ocr_results, show_confidence=True):
     img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img_pil)
 
-    # 尝试加载中文字体
+    # 中文字体默认使用微软雅黑
     font_size = 24  # 增大字体大小
-    font_path = None
-
-    # 尝试常见的中文字体路径
-    font_paths = [
-        "C:/Windows/Fonts/simhei.ttf",  # Windows 黑体
-        "C:/Windows/Fonts/simsun.ttc",  # Windows 宋体
-        "C:/Windows/Fonts/msyh.ttc",  # Windows 微软雅黑
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",  # Linux 文泉驿微米黑
-        "/usr/share/fonts/truetype/arphic/uming.ttc",  # Linux 文鼎明体
-    ]
-
-    for path in font_paths:
-        if os.path.exists(path):
-            font_path = path
-            break
-
-    # 如果找不到中文字体，使用默认字体
-    try:
-        if font_path:
-            font = ImageFont.truetype(font_path, font_size)
-        else:
-            # 使用默认字体
-            font = ImageFont.load_default()
-            print("警告：未找到中文字体，使用默认字体")
-    except Exception as e:
-        print(f"加载字体失败: {e}")
-        font = ImageFont.load_default()
+    font_path = "font/msyh.ttc"
+    font = ImageFont.truetype(font_path, font_size)
 
     # 使用PIL绘制文本
     for box_text in ocr_results[0]:
