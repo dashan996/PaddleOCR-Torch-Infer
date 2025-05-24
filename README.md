@@ -55,8 +55,11 @@ uv sync
 
 下载模型文件，放置在`models`目录下。
 
-百度网盘：https://pan.baidu.com/s/1rECdbCJhKZFxjKTA5MavWg?pwd=8888 (提取码: 8888)
+- ch_PP-OCRv3_det_infer.pth：https://github.com/zstar1003/PaddleOCR-Torch-Infer/releases/download/v2.0.0/ch_PP-OCRv3_det_infer.pth
 
+- ch_PP-OCRv5_rec_server_infer.pth：https://github.com/zstar1003/PaddleOCR-Torch-Infer/releases/download/v2.0.0/ch_PP-OCRv5_rec_server_infer.pth
+
+备用链接：https://pan.baidu.com/s/1rECdbCJhKZFxjKTA5MavWg?pwd=8888 (提取码: 8888)
 
 ### 命令行参数
 
