@@ -45,3 +45,6 @@ nltk_data/
 *[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
 
 .venv/
+
+models/ch_PP-OCRv3_det_infer.pth
+models/ch_PP-OCRv5_rec_server_infer.pth

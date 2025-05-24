@@ -51,6 +51,12 @@ uv venv --python 3.10
 uv sync
 ```
 
+5. 下载模型
+
+下载模型文件，放置在`models`目录下。
+
+百度网盘：https://pan.baidu.com/s/1rECdbCJhKZFxjKTA5MavWg?pwd=8888 (提取码: 8888)
+
 
 ### 命令行参数
 
