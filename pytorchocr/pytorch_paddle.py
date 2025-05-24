@@ -145,9 +145,9 @@ class PytorchPaddleOCR(TextSystem):
         else:
             pass
 
-        kwargs["det_model_path"] = "models/ch_PP-OCRv4_det_infer.pth"
-        kwargs["rec_model_path"] = "models/ch_PP-OCRv4_rec_infer.pth"
-        kwargs["rec_char_dict_path"] = "models/ppocr_keys_v1.txt"
+        kwargs["det_model_path"] = "models/ch_PP-OCRv3_det_infer.pth"
+        kwargs["rec_model_path"] = "models/ch_PP-OCRv5_rec_server_infer.pth"
+        kwargs["rec_char_dict_path"] = "models/ppocrv5_dict.txt"
         # kwargs['rec_batch_num'] = 8
 
         kwargs["device"] = device

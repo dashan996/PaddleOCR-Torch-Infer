@@ -4,7 +4,11 @@ import argparse
 from pathlib import Path
 from pytorchocr.pytorch_paddle import PytorchPaddleOCR
 from utils.visualize import draw_ocr_results
+import warnings
 
+warnings.filterwarnings(
+    "ignore", message="Using padding='same' with even kernel lengths"
+)
 
 root_dir = Path(__file__).resolve().parent
 

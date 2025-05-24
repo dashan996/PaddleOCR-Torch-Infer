@@ -9,11 +9,11 @@ PaddleOCR是效果最好的开源OCR工具之一，然而，其原生只支持�
 
 ## 所用模型
 
-检测模型：ch_PP-OCRv4_det_infer.pth
+检测模型：ch_PP-OCRv3_det_infer.pth
 
-识别模型：ch_PP-OCRv4_rec_infer.pth
+识别模型：ch_PP-OCRv5_rec_server_infer.pth
 
-字典文件：ppocr_keys_v1.txt
+字典文件：ppocrv5_dict.txt
 
 ## 项目结构
 
@@ -43,7 +43,7 @@ uv venv --python 3.10
 
 3. 激活虚拟环境
 ```bash
-.\.venv\Scripts\activate
+.venv/Scripts/activate
 ```
 
 4. 根据`uv.lock`安装依赖
