@@ -1,28 +1,24 @@
+import os, sys
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torch import nn
-
-from ..backbones.det_mobilenet_v3 import SEModule
-from ..necks.intracl import IntraCLBlock
-
+from pytorchocr.modeling.backbones.det_mobilenet_v3 import SEModule
+from pytorchocr.modeling.necks.intracl import IntraCLBlock
 
 def hard_swish(x, inplace=True):
-    return x * F.relu6(x + 3.0, inplace=inplace) / 6.0
-
+    return x * F.relu6(x + 3., inplace=inplace) / 6.
 
 class DSConv(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        padding,
-        stride=1,
-        groups=None,
-        if_act=True,
-        act="relu",
-        **kwargs
-    ):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 padding,
+                 stride=1,
+                 groups=None,
+                 if_act=True,
+                 act="relu",
+                 **kwargs):
         super(DSConv, self).__init__()
         if groups == None:
             groups = in_channels
@@ -35,8 +31,7 @@ class DSConv(nn.Module):
             stride=stride,
             padding=padding,
             groups=groups,
-            bias=False,
-        )
+            bias=False)
 
         self.bn1 = nn.BatchNorm2d(in_channels)
 
@@ -45,8 +40,7 @@ class DSConv(nn.Module):
             out_channels=int(in_channels * 4),
             kernel_size=1,
             stride=1,
-            bias=False,
-        )
+            bias=False)
 
         self.bn2 = nn.BatchNorm2d(int(in_channels * 4))
 
@@ -55,8 +49,7 @@ class DSConv(nn.Module):
             out_channels=out_channels,
             kernel_size=1,
             stride=1,
-            bias=False,
-        )
+            bias=False)
         self._c = [in_channels, out_channels]
         if in_channels != out_channels:
             self.conv_end = nn.Conv2d(
@@ -64,10 +57,10 @@ class DSConv(nn.Module):
                 out_channels=out_channels,
                 kernel_size=1,
                 stride=1,
-                bias=False,
-            )
+                bias=False)
 
     def forward(self, inputs):
+
         x = self.conv1(inputs)
         x = self.bn1(x)
 
@@ -79,11 +72,8 @@ class DSConv(nn.Module):
             elif self.act == "hardswish":
                 x = hard_swish(x)
             else:
-                print(
-                    "The activation function({}) is selected incorrectly.".format(
-                        self.act
-                    )
-                )
+                print("The activation function({}) is selected incorrectly.".
+                      format(self.act))
                 exit()
 
         x = self.conv3(x)
@@ -102,54 +92,46 @@ class DBFPN(nn.Module):
             in_channels=in_channels[0],
             out_channels=self.out_channels,
             kernel_size=1,
-            bias=False,
-        )
+            bias=False)
         self.in3_conv = nn.Conv2d(
             in_channels=in_channels[1],
             out_channels=self.out_channels,
             kernel_size=1,
-            bias=False,
-        )
+            bias=False)
         self.in4_conv = nn.Conv2d(
             in_channels=in_channels[2],
             out_channels=self.out_channels,
             kernel_size=1,
-            bias=False,
-        )
+            bias=False)
         self.in5_conv = nn.Conv2d(
             in_channels=in_channels[3],
             out_channels=self.out_channels,
             kernel_size=1,
-            bias=False,
-        )
+            bias=False)
         self.p5_conv = nn.Conv2d(
             in_channels=self.out_channels,
             out_channels=self.out_channels // 4,
             kernel_size=3,
             padding=1,
-            bias=False,
-        )
+            bias=False)
         self.p4_conv = nn.Conv2d(
             in_channels=self.out_channels,
             out_channels=self.out_channels // 4,
             kernel_size=3,
             padding=1,
-            bias=False,
-        )
+            bias=False)
         self.p3_conv = nn.Conv2d(
             in_channels=self.out_channels,
             out_channels=self.out_channels // 4,
             kernel_size=3,
             padding=1,
-            bias=False,
-        )
+            bias=False)
         self.p2_conv = nn.Conv2d(
             in_channels=self.out_channels,
             out_channels=self.out_channels // 4,
             kernel_size=3,
             padding=1,
-            bias=False,
-        )
+            bias=False)
 
         if self.use_asf is True:
             self.asf = ASFBlock(self.out_channels, self.out_channels // 4)
@@ -163,40 +145,19 @@ class DBFPN(nn.Module):
         in2 = self.in2_conv(c2)
 
         out4 = in4 + F.interpolate(
-            in5,
-            scale_factor=2,
-            mode="nearest",
-        )  # align_mode=1)  # 1/16
+            in5, scale_factor=2, mode="nearest", )#align_mode=1)  # 1/16
         out3 = in3 + F.interpolate(
-            out4,
-            scale_factor=2,
-            mode="nearest",
-        )  # align_mode=1)  # 1/8
+            out4, scale_factor=2, mode="nearest", )#align_mode=1)  # 1/8
         out2 = in2 + F.interpolate(
-            out3,
-            scale_factor=2,
-            mode="nearest",
-        )  # align_mode=1)  # 1/4
+            out3, scale_factor=2, mode="nearest", )#align_mode=1)  # 1/4
 
         p5 = self.p5_conv(in5)
         p4 = self.p4_conv(out4)
         p3 = self.p3_conv(out3)
         p2 = self.p2_conv(out2)
-        p5 = F.interpolate(
-            p5,
-            scale_factor=8,
-            mode="nearest",
-        )  # align_mode=1)
-        p4 = F.interpolate(
-            p4,
-            scale_factor=4,
-            mode="nearest",
-        )  # align_mode=1)
-        p3 = F.interpolate(
-            p3,
-            scale_factor=2,
-            mode="nearest",
-        )  # align_mode=1)
+        p5 = F.interpolate(p5, scale_factor=8, mode="nearest", )#align_mode=1)
+        p4 = F.interpolate(p4, scale_factor=4, mode="nearest", )#align_mode=1)
+        p3 = F.interpolate(p3, scale_factor=2, mode="nearest", )#align_mode=1)
 
         fuse = torch.cat([p5, p4, p3, p2], dim=1)
 
@@ -215,8 +176,7 @@ class RSELayer(nn.Module):
             out_channels=self.out_channels,
             kernel_size=kernel_size,
             padding=int(kernel_size // 2),
-            bias=False,
-        )
+            bias=False)
         self.se_block = SEModule(self.out_channels)
         self.shortcut = shortcut
 
@@ -236,8 +196,8 @@ class RSEFPN(nn.Module):
         self.ins_conv = nn.ModuleList()
         self.inp_conv = nn.ModuleList()
         self.intracl = False
-        if "intracl" in kwargs.keys() and kwargs["intracl"] is True:
-            self.intracl = kwargs["intracl"]
+        if 'intracl' in kwargs.keys() and kwargs['intracl'] is True:
+            self.intracl = kwargs['intracl']
             self.incl1 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
             self.incl2 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
             self.incl3 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
@@ -245,13 +205,17 @@ class RSEFPN(nn.Module):
 
         for i in range(len(in_channels)):
             self.ins_conv.append(
-                RSELayer(in_channels[i], out_channels, kernel_size=1, shortcut=shortcut)
-            )
+                RSELayer(
+                    in_channels[i],
+                    out_channels,
+                    kernel_size=1,
+                    shortcut=shortcut))
             self.inp_conv.append(
                 RSELayer(
-                    out_channels, out_channels // 4, kernel_size=3, shortcut=shortcut
-                )
-            )
+                    out_channels,
+                    out_channels // 4,
+                    kernel_size=3,
+                    shortcut=shortcut))
 
     def forward(self, x):
         c2, c3, c4, c5 = x
@@ -261,9 +225,12 @@ class RSEFPN(nn.Module):
         in3 = self.ins_conv[1](c3)
         in2 = self.ins_conv[0](c2)
 
-        out4 = in4 + F.interpolate(in5, scale_factor=2, mode="nearest")  # 1/16
-        out3 = in3 + F.interpolate(out4, scale_factor=2, mode="nearest")  # 1/8
-        out2 = in2 + F.interpolate(out3, scale_factor=2, mode="nearest")  # 1/4
+        out4 = in4 + F.interpolate(
+            in5, scale_factor=2, mode="nearest")  # 1/16
+        out3 = in3 + F.interpolate(
+            out4, scale_factor=2, mode="nearest")  # 1/8
+        out2 = in2 + F.interpolate(
+            out3, scale_factor=2, mode="nearest")  # 1/4
 
         p5 = self.inp_conv[3](in5)
         p4 = self.inp_conv[2](out4)
@@ -285,7 +252,7 @@ class RSEFPN(nn.Module):
 
 
 class LKPAN(nn.Module):
-    def __init__(self, in_channels, out_channels, mode="large", **kwargs):
+    def __init__(self, in_channels, out_channels, mode='large', **kwargs):
         super(LKPAN, self).__init__()
         self.out_channels = out_channels
 
@@ -295,16 +262,14 @@ class LKPAN(nn.Module):
         self.pan_head_conv = nn.ModuleList()
         self.pan_lat_conv = nn.ModuleList()
 
-        if mode.lower() == "lite":
+        if mode.lower() == 'lite':
             p_layer = DSConv
-        elif mode.lower() == "large":
+        elif mode.lower() == 'large':
             p_layer = nn.Conv2d
         else:
             raise ValueError(
-                "mode can only be one of ['lite', 'large'], but received {}".format(
-                    mode
-                )
-            )
+                "mode can only be one of ['lite', 'large'], but received {}".
+                format(mode))
 
         for i in range(len(in_channels)):
             self.ins_conv.append(
@@ -312,9 +277,7 @@ class LKPAN(nn.Module):
                     in_channels=in_channels[i],
                     out_channels=self.out_channels,
                     kernel_size=1,
-                    bias=False,
-                )
-            )
+                    bias=False))
 
             self.inp_conv.append(
                 p_layer(
@@ -322,9 +285,7 @@ class LKPAN(nn.Module):
                     out_channels=self.out_channels // 4,
                     kernel_size=9,
                     padding=4,
-                    bias=False,
-                )
-            )
+                    bias=False))
 
             if i > 0:
                 self.pan_head_conv.append(
@@ -334,21 +295,17 @@ class LKPAN(nn.Module):
                         kernel_size=3,
                         padding=1,
                         stride=2,
-                        bias=False,
-                    )
-                )
+                        bias=False))
             self.pan_lat_conv.append(
                 p_layer(
                     in_channels=self.out_channels // 4,
                     out_channels=self.out_channels // 4,
                     kernel_size=9,
                     padding=4,
-                    bias=False,
-                )
-            )
+                    bias=False))
             self.intracl = False
-            if "intracl" in kwargs.keys() and kwargs["intracl"] is True:
-                self.intracl = kwargs["intracl"]
+            if 'intracl' in kwargs.keys() and kwargs['intracl'] is True:
+                self.intracl = kwargs['intracl']
                 self.incl1 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
                 self.incl2 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
                 self.incl3 = IntraCLBlock(self.out_channels // 4, reduce_factor=2)
@@ -362,9 +319,12 @@ class LKPAN(nn.Module):
         in3 = self.ins_conv[1](c3)
         in2 = self.ins_conv[0](c2)
 
-        out4 = in4 + F.interpolate(in5, scale_factor=2, mode="nearest")  # 1/16
-        out3 = in3 + F.interpolate(out4, scale_factor=2, mode="nearest")  # 1/8
-        out2 = in2 + F.interpolate(out3, scale_factor=2, mode="nearest")  # 1/4
+        out4 = in4 + F.interpolate(
+            in5, scale_factor=2, mode="nearest")  # 1/16
+        out3 = in3 + F.interpolate(
+            out4, scale_factor=2, mode="nearest")  # 1/8
+        out2 = in2 + F.interpolate(
+            out3, scale_factor=2, mode="nearest")  # 1/4
 
         f5 = self.inp_conv[3](in5)
         f4 = self.inp_conv[2](out4)
@@ -415,23 +375,22 @@ class ASFBlock(nn.Module):
         self.conv = nn.Conv2d(in_channels, inter_channels, 3, padding=1)
 
         self.spatial_scale = nn.Sequential(
-            # Nx1xHxW
+            #Nx1xHxW
             nn.Conv2d(
                 in_channels=1,
                 out_channels=1,
                 kernel_size=3,
                 bias=False,
                 padding=1,
-            ),
+                ),
             nn.ReLU(),
             nn.Conv2d(
                 in_channels=1,
                 out_channels=1,
                 kernel_size=1,
                 bias=False,
-            ),
-            nn.Sigmoid(),
-        )
+                ),
+            nn.Sigmoid())
 
         self.channel_scale = nn.Sequential(
             nn.Conv2d(
@@ -439,9 +398,8 @@ class ASFBlock(nn.Module):
                 out_channels=out_features_num,
                 kernel_size=1,
                 bias=False,
-            ),
-            nn.Sigmoid(),
-        )
+                ),
+            nn.Sigmoid())
 
     def forward(self, fuse_features, features_list):
         fuse_features = self.conv(fuse_features)
@@ -452,5 +410,5 @@ class ASFBlock(nn.Module):
 
         out_list = []
         for i in range(self.out_features_num):
-            out_list.append(attention_scores[:, i : i + 1] * features_list[i])
+            out_list.append(attention_scores[:, i:i + 1] * features_list[i])
         return torch.cat(out_list, dim=1)

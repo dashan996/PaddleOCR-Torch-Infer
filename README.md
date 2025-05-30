@@ -79,6 +79,12 @@ python infer.py --data_path test_img/general_ocr_rec_001.png --save_path output/
 python infer.py --data_path test_img --save_path output
 ```
 
+## 推理视频
+
+```bash
+python infer_video.py --video_path your_video.mp4
+```
+
 ## 识别效果展示
 
 <div align="center">

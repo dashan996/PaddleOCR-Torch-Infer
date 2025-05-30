@@ -125,28 +125,13 @@ class PytorchPaddleOCR(TextSystem):
         parser = utility.init_args()
         args = parser.parse_args(args)
 
-        self.lang = kwargs.get("lang", "ch")
+        self.lang = kwargs.get("lang", "ch_lite")
 
         device = get_device()
-        if device == "cpu" and self.lang in ["ch", "ch_server"]:
-            logger.warning(
-                "The current device in use is CPU. To ensure the speed of parsing, the language is automatically switched to ch_lite."
-            )
-            self.lang = "ch_lite"
+        print(f"当前使用设备: {device}")
 
-        if self.lang in latin_lang:
-            self.lang = "latin"
-        elif self.lang in arabic_lang:
-            self.lang = "arabic"
-        elif self.lang in cyrillic_lang:
-            self.lang = "cyrillic"
-        elif self.lang in devanagari_lang:
-            self.lang = "devanagari"
-        else:
-            pass
-
-        kwargs["det_model_path"] = "models/ch_PP-OCRv3_det_infer.pth"
-        kwargs["rec_model_path"] = "models/ch_PP-OCRv5_rec_server_infer.pth"
+        kwargs["det_model_path"] = "models/ptocr_v5_mobile_det.pth"
+        kwargs["rec_model_path"] = "models/ptocr_v5_mobile_rec.pth"
         kwargs["rec_char_dict_path"] = "models/ppocrv5_dict.txt"
         # kwargs['rec_batch_num'] = 8
 

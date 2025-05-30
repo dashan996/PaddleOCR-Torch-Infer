@@ -2,8 +2,7 @@ import os, sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from ..common import Activation
+from pytorchocr.modeling.common import Activation
 
 
 class ConvBNLayer(nn.Module):
