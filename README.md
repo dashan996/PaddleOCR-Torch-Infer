@@ -9,11 +9,15 @@ PaddleOCR是效果最好的开源OCR工具之一，然而，其原生只支持�
 
 ## 所用模型
 
-检测模型：ch_PP-OCRv3_det_infer.pth
+检测模型：ptocr_v5_mobile_det.pth
 
-识别模型：ch_PP-OCRv5_rec_server_infer.pth
+识别模型：ptocr_v5_mobile_rec.pth
 
 字典文件：ppocrv5_dict.txt
+
+如果需要其它模型，可从 PaddleOCR2Pytorch 仓库中获取：
+
+传送门：https://pan.baidu.com/s/1r1DELT8BlgxeOP2RqREJEg (提取码：6clx)
 
 ## 项目结构
 
@@ -51,16 +55,6 @@ uv venv --python 3.10
 uv sync
 ```
 
-5. 下载模型
-
-下载模型文件，放置在`models`目录下。
-
-- ch_PP-OCRv3_det_infer.pth：https://github.com/zstar1003/PaddleOCR-Torch-Infer/releases/download/v2.0.0/ch_PP-OCRv3_det_infer.pth
-
-- ch_PP-OCRv5_rec_server_infer.pth：https://github.com/zstar1003/PaddleOCR-Torch-Infer/releases/download/v2.0.0/ch_PP-OCRv5_rec_server_infer.pth
-
-备用链接：https://pan.baidu.com/s/1rECdbCJhKZFxjKTA5MavWg?pwd=8888 (提取码: 8888)
-
 ### 命令行参数
 
 - `--data_path`：**必需参数**，指定输入图片路径或目录路径
@@ -82,7 +76,7 @@ python infer.py --data_path test_img --save_path output
 ## 推理视频
 
 ```bash
-python infer_video.py --video_path your_video.mp4
+python infer_video.py --video_path test_video/ocr_test.mp4
 ```
 
 ## 识别效果展示
@@ -91,6 +85,7 @@ python infer_video.py --video_path your_video.mp4
   <img src="output/12_result.jpg" width="400" alt="img1">
   <img src="output/254_result.jpg" width="400" alt="img2">
   <img src="output/chinese_cht_1_result.png" width="400" alt="img3">
+  <video src="https://github.com/zstar1003/PaddleOCR-Torch-Infer/blob/main/output/ocr_test_ocr_result.mp4" controls width="100%"></video>
 </div>
 
 
