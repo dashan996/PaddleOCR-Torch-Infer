@@ -62,6 +62,26 @@ ch_PP-OCRv3_det_infer:
     name: DBHead
     k: 50
 
+ch_PP-OCRv3_rec_infer:
+  model_type: rec
+  algorithm: SVTR
+  Transform:
+  Backbone:
+    name: MobileNetV1Enhance
+    scale: 0.5
+    last_conv_stride: [1, 2]
+    last_pool_type: avg
+  Neck:
+    name: SequenceEncoder
+    encoder_type: svtr
+    dims: 64
+    depth: 2
+    hidden_dims: 120
+    use_guide: True
+  Head:
+    name: CTCHead
+    fc_decay: 0.00001
+
 en_PP-OCRv4_rec_infer:
   model_type: rec
   algorithm: SVTR_LCNet

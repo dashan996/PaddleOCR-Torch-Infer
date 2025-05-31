@@ -51,3 +51,4 @@ models/ch_PP-OCRv5_rec_server_infer.pth
 
 results/
 output_video/
+models/ch_PP-OCRv3_rec_infer.pth
